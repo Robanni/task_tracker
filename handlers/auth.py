@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from dependency import get_auth_service
 from exception import UserNotCorrectPasswordException, UserNotFoundException
-from schemas  import UserCreateSchema
+from schemas import UserCreateSchema
 from schemas import UserLoginSchema
 from service import AuthService
 

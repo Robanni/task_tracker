@@ -4,7 +4,7 @@ from sqlalchemy import select, delete, update
 from models import Tasks
 from database import get_db
 from models import Categories
-from schemas.task import TaskSchema
+from schemas import TaskCreateSchema, TaskSchema
 
 
 class TaskRepository:
@@ -23,9 +23,9 @@ class TaskRepository:
                 select(Tasks).where(Tasks.id == task_id)).scalar()
         return task
 
-    def create_task(self, task: TaskSchema) -> int:
+    def create_task(self, task: TaskCreateSchema, user_id: int) -> int:
         task_model = Tasks(
-            name=task.name, tracker_count=task.tracker_count, category_id=task.category_id)
+            name=task.name, tracker_count=task.tracker_count, category_id=task.category_id, user_id=user_id)
         with self.db_session as session:
             session.add(task_model)
             session.commit()
@@ -39,11 +39,12 @@ class TaskRepository:
             session.commit()
             return self.get_task(id)
 
-    def delete_task(self, task_id: int) -> None:
+    def delete_task(self, task_id: int, user_id: int) -> None:
+        query = delete(Tasks).where(
+            Tasks.id == task_id, Tasks.user_id == user_id)
         with self.db_session as session:
-            task = session.execute(delete(Tasks).where(Tasks.id == task_id))
+            task = session.execute(query)
             session.commit()
-
 
     def get_task_by_category_name(self, category_name: str) -> list[Tasks | None]:
         query = select(Tasks).join(Categories, Tasks.category_id ==
@@ -51,4 +52,11 @@ class TaskRepository:
         with self.db_session as session:
             task: list[Tasks | None] = list(
                 session.execute(query).scalars().all())
+        return task
+
+    def get_user_task(self, user_id: int, task_id: int) -> Tasks | None:
+        query = select(Tasks).where(
+            Tasks.id == task_id, Tasks.user_id == user_id)
+        with self.db_session as session:
+            task: Tasks | None = session.execute(query).scalar_one_or_none()
         return task

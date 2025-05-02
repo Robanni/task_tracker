@@ -6,6 +6,7 @@ class TaskSchema(BaseModel):
     name: str | None = None
     tracker_count: int | None = None
     category_id: int
+    user_id:int
 
     class Config:
         from_attributes = True
@@ -15,3 +16,9 @@ class TaskSchema(BaseModel):
         if self.name is None and self.tracker_count is None:
             print("name or task_count must be provided")
         return self
+
+
+class TaskCreateSchema(BaseModel):
+    name: str | None = None
+    tracker_count: int | None = None
+    category_id: int
