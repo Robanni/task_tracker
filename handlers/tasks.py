@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 
-from dependency import get_task_cache_repository, get_task_repository, get_task_service
+from dependency import get_request_user_id, get_task_cache_repository, get_task_repository, get_task_service
 from repository import TaskCache
 from schemas.task import TaskSchema
 from repository import TaskRepository
@@ -23,10 +23,12 @@ async def get_tasks(
 
 @router.post(
     "/",
-    response_model=TaskSchema,)
+    response_model=TaskSchema,
+)
 async def create_task(
     task: TaskSchema,
-    task_repository: Annotated[TaskRepository, Depends(get_task_repository)]
+    task_repository: Annotated[TaskRepository, Depends(get_task_repository)],
+    user_id: int = Depends(get_request_user_id)
 ):
     task_id = task_repository.create_task(task)
     task.id = task_id
@@ -48,6 +50,6 @@ async def patch_task(
 @router.delete(
     "/{task_id}",
 )
-async def delete_task(task_id: int,task_repository: Annotated[TaskRepository, Depends(get_task_repository)]):
-   task_repository.delete_task(task_id)
-   return {"msg":"task was deleted"}
+async def delete_task(task_id: int, task_repository: Annotated[TaskRepository, Depends(get_task_repository)]):
+    task_repository.delete_task(task_id)
+    return {"msg": "task was deleted"}
